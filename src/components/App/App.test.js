@@ -2,75 +2,43 @@ import {
   render,
   screen,
   cleanup,
-  fireEvent
+  fireEvent,
+  waitFor
 } from '@testing-library/react';
-import Chance from 'chance';
 
 import App from '.';
 
-const chance = new Chance();
+describe('Testing App', () => {
+  afterEach(() => cleanup());
 
-describe('Testes que podem ser feitos', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
-  test('Renderizar componente na tela (básico)', () => {
+  test('Verifica se o form é renderizado (pelo mock)', () => {
     render(<App />);
-    const linkElement = screen.getByRole('link', { name: /learn react/i });
-    expect(linkElement).toBeInTheDocument();
+    const appMessage = screen.getByText(/Não/i);
+    expect(appMessage).toBeInTheDocument();
   });
 
-  test('Contar se a quantidade de um tipo de componente esta certa (lista)', () => {
+  test('Deve preencher o select', async () => {
     render(<App />);
-    // get all para pegar quantidade
-    const linkElement = screen.getAllByRole('link', { name: /learn react/i });
-    expect(linkElement).toHaveLength(1);
-  });
+    const name = 'Tiago';
+    const city = 'BH';
 
-  test('Verificar o valor de um atributo (se tem)', () => {
-    render(<App />);
-    const buttonDisabled = screen.getByRole('button', { name: /Desabilitado/i });
-    expect(buttonDisabled).toHaveAttribute('disabled');
-  });
+    const inputName = screen.getByPlaceholderText('Digite seu nome');
+    fireEvent.change(inputName, { target: { value: name } });
+    fireEvent.blur(inputName);
 
-  test('Verificar o valor de um atributo (se não tem)', () => {
-    render(<App />);
-    const button = screen.getByRole('button', { name: /Habilitado/i });
-    expect(button).not.toHaveAttribute('disabled');
-  });
+    const selectCity = screen.getByPlaceholderText('Selecione');
+    fireEvent.change(selectCity, { target: { value: city } });
+    fireEvent.blur(selectCity);
 
-  test('Verificar se imagem é acessivel (se tem alt)', () => {
-    render(<App />);
-    const image = screen.getByAltText('logo');
-    expect(image).toBeInTheDocument();
-  });
+    const buttonSubmit = screen.getByText('Enviar');
+    fireEvent.click(buttonSubmit);
 
-  test('Verificar se props está sendo passada', () => {
-    const message = chance.sentence();
-    render(<App message={message} />);
-    const messageProps = screen.getByText(message);
-    expect(messageProps).toBeInTheDocument();
-  });
+    await waitFor(() => {
+      const appMessageNot = screen.queryByText(/Não/i);
+      expect(appMessageNot).not.toBeInTheDocument();
 
-  test('Verificar se props com valor default funciona', () => {
-    const defaultMessageProps = 'default';
-    render(<App />);
-    const messageProps = screen.getByText(defaultMessageProps);
-    expect(messageProps).toBeInTheDocument();
-  });
-
-  test('Verificar se props passada como funcção (callback) é execultada', () => {
-    const mockFunction = jest.fn();
-    render(<App customFunction={mockFunction} />);
-    const button = screen.getByRole('button', { name: /Habilitado/i });
-    fireEvent.click(button);
-    expect(mockFunction).toBeCalled();
-  });
-
-  test('Verificar se props passada como funcção (callback) não é execultada (se não clicar)', () => {
-    const mockFunction = jest.fn();
-    render(<App customFunction={mockFunction} />);
-    expect(mockFunction).not.toBeCalled();
+      const appMessage = screen.queryByText(/OK/i);
+      expect(appMessage).toBeInTheDocument();
+    });
   });
 });
