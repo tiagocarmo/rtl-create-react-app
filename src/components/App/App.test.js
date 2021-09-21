@@ -11,13 +11,13 @@ import App from '.';
 describe('Testing App', () => {
   afterEach(() => cleanup());
 
-  test('Verifica se o form é renderizado (pelo mock)', () => {
+  test('Verifica a mensagem na condição inicial do componente', () => {
     render(<App />);
     const appMessage = screen.getByText(/Não/i);
     expect(appMessage).toBeInTheDocument();
   });
 
-  test('Deve preencher o select', async () => {
+  test('Verifica se pós interação, a mensagem alterada', async () => {
     render(<App />);
     const name = 'Tiago';
     const city = 'BH';
